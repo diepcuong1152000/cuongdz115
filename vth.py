@@ -74,12 +74,12 @@ def load_vip_key(device_id):
 
 def kiem_tra_quyen_truy_cap(device_id):
     global GLOBAL_KEY_MODE
-    print(Fore.CYAN + "\n" + "=" * 50)
+    print(Fore.CYAN + "\n" + "=" * 48)
     print(Fore.YELLOW + "   CHỌN LOẠI KEY")
-    print(Fore.CYAN + "=" * 50)
+    print(Fore.CYAN + "=" * 48)
     print(Fore.GREEN + "1. Key Free (vượt link)")
     print(Fore.MAGENTA + "2. Key VIP (ib Cường để mua)")
-    print(Fore.CYAN + "=" * 50)
+    print(Fore.CYAN + "=" * 48)
 
     choice = input(Fore.YELLOW + "Chọn (1-2): " + Fore.WHITE).strip()
 
