@@ -329,7 +329,7 @@ if __name__ == "__main__":
             profit = new_balance - current_balance
             total_profit = new_balance - initial_balance
 
-            if killed_room_id != pending_room:  # thắng
+            if killed_room_id != pending_room: 
                 total_wins += 1
                 win_streak += 1
                 print(Fore.GREEN + f"🎉 Kỳ {current_issue}: THẮNG (+{profit:.2f} {asset_mode})")
@@ -338,7 +338,7 @@ if __name__ == "__main__":
                 if win_limit > 0 and total_wins % win_limit == 0:
                     print(Fore.CYAN + f"🛑 Đã thắng {total_wins} ván, tạm nghỉ {rest_games} ván...")
                     skip_rounds = rest_games
-            else:  # thua
+            else: 
                 total_losses += 1
                 win_streak = 0
                 print(Fore.RED + f"💀 Kỳ {current_issue}: THUA ({profit:.2f} {asset_mode})")
@@ -352,10 +352,21 @@ if __name__ == "__main__":
 
         pred_id = str(int(current_issue) + 1)
 
+        # nghỉ nhưng vẫn đợi hết kỳ
         if skip_rounds > 0:
             print(Fore.MAGENTA + f"⏸️ Đang nghỉ, còn {skip_rounds} ván...")
+            print(Fore.RED + f"🔪 Sát thủ kỳ {current_issue}: {killed_room_name}\n")
             skip_rounds -= 1
-            time.sleep(2)
+
+            countdown = 1
+            while True:
+                time.sleep(1)
+                print(Fore.YELLOW + f"đang phân tích...{countdown}s", end="\r")
+                countdown += 1
+                new_issue, _, _, _, _ = analyze_data(headers, asset_mode)
+                if new_issue and new_issue != current_issue:
+                    print(Fore.GREEN + "\n🎉 Có kỳ mới! Đang xử lý...")
+                    break
             continue
 
         print(Fore.BLUE + "╔═══════════════════════════╗" + Fore.WHITE)
@@ -399,7 +410,6 @@ if __name__ == "__main__":
             for i in range(min(3, len(sorted_rooms))):
                 room_id, rate = sorted_rooms[i]
                 room_name = room_names_map.get(str(room_id), f"Phòng #{room_id}")
-
                 print(Fore.YELLOW + f"   {i+1}. {room_name}: {rate:.1f}%")
 
             print(Fore.RED + "╔══════════════════╗" + Fore.WHITE)
