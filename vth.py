@@ -2,6 +2,7 @@ import requests
 import time
 import os
 import uuid
+import random
 import hashlib
 from datetime import datetime, timedelta
 from urllib.parse import urlparse, parse_qs
@@ -87,7 +88,17 @@ def kiem_tra_quyen_truy_cap(device_id):
         GLOBAL_KEY_MODE = "FREE"
         print(Fore.CYAN + "\nBạn đã chọn Key Free")
         print(Fore.YELLOW + "👉 Vui lòng mở link rút gọn 4m để lấy key:")
-        print(Fore.GREEN + "   https://https://link4m.com/Bhdv5")
+
+        # Danh sách nhiều link free
+        free_links = [
+            "https://link4m.com/aX4bHgdg",
+            "https://link4m.com/yKIf9NS",
+            "https://link4m.com/Bhdv5",
+        ]
+
+        # Chọn ngẫu nhiên 1 link
+        random_link = random.choice(free_links)
+        print(Fore.GREEN + "   " + random_link)
 
         print(Fore.YELLOW + "Sau khi vượt qua, để thấy User ID + Key Free")
 
@@ -302,7 +313,7 @@ if __name__ == "__main__":
 
     room_picked_count = {}
     locked_rooms = {}
-    pick_pattern = [1, 1, 2, 1, 2]
+    pick_pattern = [1, 1, 2, 2, 1]
 
     pick_index = 0
     skip_rounds = 0
