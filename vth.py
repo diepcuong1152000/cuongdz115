@@ -57,7 +57,7 @@ def thoi_gian_con_lai_trong_ngay():
 
 def load_vip_key(device_id):
     try:
-        url_key = "https://raw.githubusercontent.com/Cuongdz2828/pt/refs/heads/main/test/a.txt"
+        url_key = "https://raw.githubusercontent.com/Cuongdz2828/pt/main/test/a.txt"
         ds_key_raw = requests.get(url_key, timeout=5).text.strip().splitlines()
         dev_local = device_id.replace("DEVICE-", "").strip().upper()
         for dong in ds_key_raw:
@@ -237,7 +237,6 @@ if __name__ == "__main__":
     device_id = get_device_id()
     kiem_tra_quyen_truy_cap(device_id)
 
-  
     print(Fore.CYAN + "\n================= LIÊN HỆ ADMIN ================")
     print(Fore.YELLOW + "👨‍💻 Admin: " + Fore.GREEN + "Cường")
     print(Fore.YELLOW + "💬 Zalo Group: " + Fore.CYAN + "https://zalo.me/g/cdomty095")
@@ -250,7 +249,6 @@ if __name__ == "__main__":
     print(Fore.CYAN + "3. Tìm và nhấp vào: " + Fore.GREEN + "Vua thoát hiểm")
     print(Fore.CYAN + "4. Nhấn lập tức truy cập")
     print(Fore.CYAN + "5. Sao chép link website và dán vào đây\n")
-
 
     saved_link = load_link()
     if saved_link:
@@ -287,10 +285,14 @@ if __name__ == "__main__":
     try:
         bet_amount = float(input(Fore.YELLOW + "Nhập số tiền cược ban đầu mỗi trận: ").strip())
         amount_to_increase_on_loss = float(input(Fore.YELLOW + "Nhập số tiền muốn tăng cược sau mỗi lần thua: ").strip())
+        win_limit = int(input(Fore.YELLOW + "Win mấy ván thì sẽ dừng cược: ").strip())
+        rest_games = int(input(Fore.YELLOW + "Sẽ dừng cược bao nhiêu ván: ").strip())
     except ValueError:
         bet_amount = 30.0
         amount_to_increase_on_loss = 10.0
-        print(Fore.YELLOW + "Nhập sai. Số tiền cược mặc định: 30.0, tăng: 10.0")
+        win_limit = 0
+        rest_games = 0
+        print(Fore.YELLOW + "Nhập sai. Số tiền cược mặc định: 10.0, tăng: 10.0, nghỉ=0")
 
     current_bet_amount = bet_amount
     total_wins, total_losses = 0, 0
@@ -298,11 +300,12 @@ if __name__ == "__main__":
     total_profit = 0.0
     pending_issue, pending_room = None, None
 
-    room_picked_count = {} 
-    locked_rooms = {}  
-    pick_pattern = [1, 1, 2, 3, 3] 
+    room_picked_count = {}
+    locked_rooms = {}
+    pick_pattern = [1, 1, 2, 2, 3]
 
     pick_index = 0
+    skip_rounds = 0
 
     initial_balance = show_wallet(headers, asset_mode)
     print(Fore.YELLOW + f"Số dư ban đầu ({asset_mode}): {initial_balance}")
@@ -320,19 +323,22 @@ if __name__ == "__main__":
             time.sleep(5)
             continue
 
-      
         if pending_issue and str(pending_issue) == str(current_issue):
             time.sleep(3)
             new_balance = show_wallet(headers, asset_mode)
             profit = new_balance - current_balance
             total_profit = new_balance - initial_balance
 
-            if killed_room_id != pending_room:
+            if killed_room_id != pending_room:  # thắng
                 total_wins += 1
                 win_streak += 1
                 print(Fore.GREEN + f"🎉 Kỳ {current_issue}: THẮNG (+{profit:.2f} {asset_mode})")
                 current_bet_amount = bet_amount
-            else:
+
+                if win_limit > 0 and total_wins % win_limit == 0:
+                    print(Fore.CYAN + f"🛑 Đã thắng {total_wins} ván, tạm nghỉ {rest_games} ván...")
+                    skip_rounds = rest_games
+            else:  # thua
                 total_losses += 1
                 win_streak = 0
                 print(Fore.RED + f"💀 Kỳ {current_issue}: THUA ({profit:.2f} {asset_mode})")
@@ -346,11 +352,16 @@ if __name__ == "__main__":
 
         pred_id = str(int(current_issue) + 1)
 
+        if skip_rounds > 0:
+            print(Fore.MAGENTA + f"⏸️ Đang nghỉ, còn {skip_rounds} ván...")
+            skip_rounds -= 1
+            time.sleep(2)
+            continue
+
         print(Fore.BLUE + "╔═══════════════════════════╗" + Fore.WHITE)
         print(Fore.BLUE + "║" + Fore.YELLOW + " ĐẶT CƯỢC CHO KỲ TIẾP THEO " + Fore.WHITE)
         print(Fore.BLUE + "╚═══════════════════════════╝" + Fore.WHITE)
 
-        
         for rid in list(locked_rooms.keys()):
             if locked_rooms[rid] > 0:
                 locked_rooms[rid] -= 1
@@ -388,6 +399,7 @@ if __name__ == "__main__":
             for i in range(min(3, len(sorted_rooms))):
                 room_id, rate = sorted_rooms[i]
                 room_name = room_names_map.get(str(room_id), f"Phòng #{room_id}")
+
                 print(Fore.YELLOW + f"   {i+1}. {room_name}: {rate:.1f}%")
 
             print(Fore.RED + "╔══════════════════╗" + Fore.WHITE)
@@ -403,7 +415,7 @@ if __name__ == "__main__":
             success = place_bet(headers, asset_mode, pred_id, int(best_room_id), current_bet_amount)
             if success:
                 pending_issue, pending_room = pred_id, str(best_room_id)
-
+                
         print(Fore.RED + f"🔪 Sát thủ kỳ {current_issue}: {killed_room_name}\n")
 
         countdown = 1
