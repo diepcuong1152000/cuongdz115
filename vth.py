@@ -57,7 +57,7 @@ def thoi_gian_con_lai_trong_ngay():
 
 def load_vip_key(device_id):
     try:
-        url_key = "https://raw.githubusercontent.com/Cuongdz2828/pt/main/test/a.txt"
+        url_key = "https://raw.githubusercontent.com/Cuongdz2828/pt/refs/heads/main/test/a.txt"
         ds_key_raw = requests.get(url_key, timeout=5).text.strip().splitlines()
         dev_local = device_id.replace("DEVICE-", "").strip().upper()
         for dong in ds_key_raw:
