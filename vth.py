@@ -302,7 +302,7 @@ if __name__ == "__main__":
 
     room_picked_count = {}
     locked_rooms = {}
-    pick_pattern = [1, 1, 2, 2, 3]
+    pick_pattern = [1, 1, 2, 1, 2]
 
     pick_index = 0
     skip_rounds = 0
