@@ -91,9 +91,9 @@ def kiem_tra_quyen_truy_cap(device_id):
 
         # Danh sách nhiều link free
         free_links = [
-            "https://link4m.com/aX4bHgdg",
-            "https://link4m.com/yKIf9NS",
-            "https://link4m.com/Bhdv5",
+            "https://ouo.io/lVO8qa",
+            "",
+            "",
         ]
 
         # Chọn ngẫu nhiên 1 link
