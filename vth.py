@@ -87,13 +87,13 @@ def kiem_tra_quyen_truy_cap(device_id):
     if choice == "1":
         GLOBAL_KEY_MODE = "FREE"
         print(Fore.CYAN + "\nBạn đã chọn Key Free")
-        print(Fore.YELLOW + "👉 Vui lòng mở link rút gọn 4m để lấy key:")
+        print(Fore.YELLOW + "👉 Vui lòng mở link để lấy key:")
 
-        # Danh sách nhiều link free
+    
         free_links = [
             "https://ouo.io/lVO8qa",
-            "",
-            "",
+            "https://ouo.io/lVO8qa",
+            "https://ouo.io/lVO8qa",
         ]
 
         # Chọn ngẫu nhiên 1 link
