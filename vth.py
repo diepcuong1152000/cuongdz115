@@ -4,6 +4,8 @@ import os
 import uuid
 import random
 import hashlib
+from datetime import datetime, timezone
+import hashlib
 from datetime import datetime, timedelta
 from urllib.parse import urlparse, parse_qs
 from colorama import Fore, init
@@ -42,13 +44,14 @@ def get_device_id():
 
 
 def make_free_key(user_id):
-    today = datetime.now().strftime("%Y-%m-%d")
+    # Dùng ngày UTC (giống web JS toISOString().slice(0,10))
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     raw = today + SECRET + user_id
     return hashlib.md5(raw.encode()).hexdigest()[:10].upper()
 
 
 def thoi_gian_con_lai_trong_ngay():
-    now = datetime.now()
+    now = datetime.utcnow() + timedelta(hours=7)
     tomorrow = (now + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
     delta = tomorrow - now
     hours, remainder = divmod(delta.seconds, 3600)
@@ -87,16 +90,13 @@ def kiem_tra_quyen_truy_cap(device_id):
     if choice == "1":
         GLOBAL_KEY_MODE = "FREE"
         print(Fore.CYAN + "\nBạn đã chọn Key Free")
-        print(Fore.YELLOW + "👉 Vui lòng mở link để lấy key:")
+        print(Fore.YELLOW + "👉 Vui lòng mở link rút gọn 4m để lấy key:")
 
-    
         free_links = [
             "https://link4m.com/Bhdv5",
             "https://link4m.com/Bhdv5",
             "https://link4m.com/Bhdv5",
         ]
-
-        # Chọn ngẫu nhiên 1 link
         random_link = random.choice(free_links)
         print(Fore.GREEN + "   " + random_link)
 
@@ -142,6 +142,7 @@ def kiem_tra_quyen_truy_cap(device_id):
     else:
         print(Fore.RED + "❌ Lựa chọn không hợp lệ!")
         exit()
+
 
 
 def fetch_data(url, headers):
@@ -298,12 +299,16 @@ if __name__ == "__main__":
         amount_to_increase_on_loss = float(input(Fore.YELLOW + "Nhập số tiền muốn tăng cược sau mỗi lần thua: ").strip())
         win_limit = int(input(Fore.YELLOW + "Win mấy ván thì sẽ dừng cược: ").strip())
         rest_games = int(input(Fore.YELLOW + "Sẽ dừng cược bao nhiêu ván: ").strip())
+        win_stop = int(input(Fore.YELLOW + "Thắng bao nhiêu BUILD thì dừng: ").strip())
+        loss_stop = int(input(Fore.YELLOW + "Thua bao nhiêu BUILD thì dừng: ").strip())
     except ValueError:
         bet_amount = 30.0
         amount_to_increase_on_loss = 10.0
         win_limit = 0
         rest_games = 0
-        print(Fore.YELLOW + "Nhập sai. Số tiền cược mặc định: 10.0, tăng: 10.0, nghỉ=0")
+        win_stop = 0
+        loss_stop = 0
+        print(Fore.YELLOW + "Nhập sai. Dùng giá trị mặc định.")
 
     current_bet_amount = bet_amount
     total_wins, total_losses = 0, 0
@@ -355,6 +360,15 @@ if __name__ == "__main__":
                 print(Fore.RED + f"💀 Kỳ {current_issue}: THUA ({profit:.2f} {asset_mode})")
                 current_bet_amount += amount_to_increase_on_loss
 
+            
+            if win_stop > 0 and total_wins >= win_stop:
+                print(Fore.CYAN + f"🏆 Đã thắng {total_wins} ván (>= {win_stop}), tự động tắt.")
+                exit()
+
+            if loss_stop > 0 and total_losses >= loss_stop:
+                print(Fore.RED + f"💀 Đã thua {total_losses} ván (>= {loss_stop}), tự động thoát.")
+                exit()
+
             print(f"  AI chọn: {room_names_map.get(pending_room, f'Phòng #{pending_room}')}")
             print(Fore.RED + f"  Sát thủ: {killed_room_name}")
 
@@ -363,7 +377,6 @@ if __name__ == "__main__":
 
         pred_id = str(int(current_issue) + 1)
 
-        # nghỉ nhưng vẫn đợi hết kỳ
         if skip_rounds > 0:
             print(Fore.MAGENTA + f"⏸️ Đang nghỉ, còn {skip_rounds} ván...")
             print(Fore.RED + f"🔪 Sát thủ kỳ {current_issue}: {killed_room_name}\n")
@@ -407,11 +420,11 @@ if __name__ == "__main__":
                 best_room_id, best_rate = available_rooms[0]
 
             best_room_name = room_names_map.get(str(best_room_id), f"Phòng #{best_room_id}")
-            print(Fore.CYAN + f"🔄 Chu kỳ: chọn phòng Top {target_rank} ({best_room_name})")
+            print(Fore.CYAN + f"🔄 chọn phòng: chọn phòng {target_rank} ({best_room_name})")
 
             room_picked_count[best_room_id] = room_picked_count.get(best_room_id, 0) + 1
             if room_picked_count[best_room_id] >= 2:
-                locked_rooms[best_room_id] = 2
+                locked_rooms[best_room_id] = 1
                 room_picked_count[best_room_id] = 0
 
             print(Fore.MAGENTA + f"✅ Phòng được chọn: {best_room_name}")
