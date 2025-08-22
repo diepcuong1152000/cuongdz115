@@ -44,7 +44,7 @@ def get_device_id():
 
 
 def make_free_key(user_id):
-    # Dùng ngày UTC (giống web JS toISOString().slice(0,10))
+    (giống web JS toISOString().slice(0,10))
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     raw = today + SECRET + user_id
     return hashlib.md5(raw.encode()).hexdigest()[:10].upper()
@@ -360,7 +360,6 @@ if __name__ == "__main__":
                 print(Fore.RED + f"💀 Kỳ {current_issue}: THUA ({profit:.2f} {asset_mode})")
                 current_bet_amount += amount_to_increase_on_loss
 
-            
             if win_stop > 0 and total_wins >= win_stop:
                 print(Fore.CYAN + f"🏆 Đã thắng {total_wins} ván (>= {win_stop}), tự động tắt.")
                 exit()
@@ -407,10 +406,11 @@ if __name__ == "__main__":
             target_rank = pick_pattern[pick_index]
             pick_index = (pick_index + 1) % len(pick_pattern)
 
-            available_rooms = [(rid, rate) for rid, rate in sorted_rooms if locked_rooms.get(str(rid), 0) == 0]
+            available_rooms = [(rid, rate) for rid, rate in sorted_rooms
+                               if locked_rooms.get(str(rid), 0) == 0 and str(rid) != str(killed_room_id)]
 
             if not available_rooms:
-                print(Fore.RED + "⚠️ Tất cả phòng đều bị khóa, bỏ qua kỳ này.")
+                print(Fore.RED + "⚠️ Tất cả phòng đều bị khóa hoặc vừa có sát thủ, bỏ qua kỳ này.")
                 time.sleep(2)
                 continue
 
@@ -449,7 +449,7 @@ if __name__ == "__main__":
             success = place_bet(headers, asset_mode, pred_id, int(best_room_id), current_bet_amount)
             if success:
                 pending_issue, pending_room = pred_id, str(best_room_id)
-                
+
         print(Fore.RED + f"🔪 Sát thủ kỳ {current_issue}: {killed_room_name}\n")
 
         countdown = 1
