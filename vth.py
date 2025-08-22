@@ -25,22 +25,20 @@ room_names_map = {
 SECRET = "MY_SECRET_SALT"
 GLOBAL_KEY_MODE = None
 
+
 def get_device_id():
     try:
-      
         android_id = os.popen("settings get secure android_id").read().strip()
-        if android_id and android_id != "null":
-            raw = "android-" + android_id
-        else:
-            # Nếu không có (máy tính) -> lấy MAC + tên máy
-            mac = uuid.getnode()
-            raw = f"{mac}-{platform.node()}"
+        model = os.popen("getprop ro.product.model").read().strip()
+        brand = os.popen("getprop ro.product.brand").read().strip()
+        serial = os.popen("getprop ro.serialno").read().strip()
+
+        raw = f"{android_id}-{brand}-{model}-{serial}"
     except:
-        # fallback: random cố định theo node
         raw = str(uuid.getnode())
 
-    
-    device_id = "DEVICE-" + hashlib.md5(raw.encode()).hexdigest()[:10].upper()
+    # Hash + lấy 15 ký tự đầu
+    device_id = "DEVICE-" + hashlib.md5(raw.encode()).hexdigest()[:15].upper()
     print(f"📌 Device ID: {device_id}")
     return device_id
 
