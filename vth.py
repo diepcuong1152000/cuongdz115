@@ -44,7 +44,7 @@ def get_device_id():
 
 
 def make_free_key(user_id):
-    (giống web JS toISOString().slice(0,10))
+    # Dùng ngày UTC (giống web JS toISOString().slice(0,10))
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     raw = today + SECRET + user_id
     return hashlib.md5(raw.encode()).hexdigest()[:10].upper()
@@ -406,6 +406,7 @@ if __name__ == "__main__":
             target_rank = pick_pattern[pick_index]
             pick_index = (pick_index + 1) % len(pick_pattern)
 
+            # ✅ Bỏ qua phòng vừa bị sát thủ giết kỳ trước
             available_rooms = [(rid, rate) for rid, rate in sorted_rooms
                                if locked_rooms.get(str(rid), 0) == 0 and str(rid) != str(killed_room_id)]
 
