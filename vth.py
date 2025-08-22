@@ -219,10 +219,7 @@ def show_wallet(headers, asset_mode, retries=3, delay=2, silent=False):
                     if not silent:
                         print(
                             Fore.LIGHTGREEN_EX
-                            + f":\n"
-                            + f"USDT: {balances['USDT']}   "
-                            + f"WORLD: {balances['WORLD']}   "
-                            + f"BUILD: {balances['BUILD']}   "
+                            + f"Số dư ({asset_mode}): {balances[asset_mode]}\n"
                         )
                     return balances[asset_mode]
         except Exception:
@@ -298,22 +295,22 @@ if __name__ == "__main__":
         amount_to_increase_on_loss = float(input(Fore.YELLOW + "Nhập số tiền muốn tăng cược sau mỗi lần thua: ").strip())
         win_limit = int(input(Fore.YELLOW + "Win mấy ván thì sẽ dừng cược: ").strip())
         rest_games = int(input(Fore.YELLOW + "Sẽ dừng cược bao nhiêu ván: ").strip())
-        win_stop = int(input(Fore.YELLOW + "Thắng bao nhiêu BUILD thì dừng: ").strip())
-        loss_stop = int(input(Fore.YELLOW + "Thua bao nhiêu BUILD thì dừng: ").strip())
+        win_stop = float(input(Fore.YELLOW + "Thắng bao nhiêu BUILD thì dừng: ").strip())
+        loss_stop = float(input(Fore.YELLOW + "Thua bao nhiêu BUILD thì dừng: ").strip())
     except ValueError:
         bet_amount = 30.0
         amount_to_increase_on_loss = 10.0
         win_limit = 0
         rest_games = 0
-        win_stop = 0
-        loss_stop = 0
+        win_stop = 0.0
+        loss_stop = 0.0
         print(Fore.YELLOW + "Nhập sai. Dùng giá trị mặc định.")
 
     current_bet_amount = bet_amount
     total_wins, total_losses = 0, 0
     win_streak = 0
-    total_profit = 0.0
     pending_issue, pending_room = None, None
+    total_profit = 0.0
 
     room_picked_count = {}
     locked_rooms = {}
@@ -341,48 +338,44 @@ if __name__ == "__main__":
         if pending_issue and str(pending_issue) == str(current_issue):
             time.sleep(3)
             new_balance = show_wallet(headers, asset_mode)
-
-            if killed_room_id != pending_room: 
+            profit = new_balance - current_balance
+            total_profit = new_balance - initial_balance
+            
+            if killed_room_id != pending_room:
                 total_wins += 1
                 win_streak += 1
-                profit = current_bet_amount   # thắng thì lời = số tiền cược
-                total_profit += profit
                 print(Fore.GREEN + f"🎉 Kỳ {current_issue}: THẮNG (+{profit:.2f} {asset_mode})")
                 current_bet_amount = bet_amount
-
                 if win_limit > 0 and total_wins % win_limit == 0:
                     print(Fore.CYAN + f"🛑 Đã thắng {total_wins} ván, tạm nghỉ {rest_games} ván...")
                     skip_rounds = rest_games
-            else: 
+            else:
                 total_losses += 1
                 win_streak = 0
-                profit = -current_bet_amount  # thua thì lỗ = số tiền cược
-                total_profit += profit
                 print(Fore.RED + f"💀 Kỳ {current_issue}: THUA ({profit:.2f} {asset_mode})")
                 current_bet_amount += amount_to_increase_on_loss
-
-            # ✅ Check thắng/thua theo số tiền, không phải số ván
+            
             if win_stop > 0 and total_profit >= win_stop:
                 print(Fore.CYAN + f"🏆 Đã lời {total_profit:.2f} {asset_mode} (>= {win_stop}), tự động dừng!")
                 exit()
-
+            
             if loss_stop > 0 and total_profit <= -loss_stop:
                 print(Fore.RED + f"💀 Đã lỗ {abs(total_profit):.2f} {asset_mode} (>= {loss_stop}), tự động thoát.")
                 exit()
-
+            
             print(f"  AI chọn: {room_names_map.get(pending_room, f'Phòng #{pending_room}')}")
             print(Fore.RED + f"  Sát thủ: {killed_room_name}")
-
+            
             pending_issue, pending_room = None, None
             time.sleep(2)
 
         pred_id = str(int(current_issue) + 1)
-
+        
         if skip_rounds > 0:
             print(Fore.MAGENTA + f"⏸️ Đang nghỉ, còn {skip_rounds} ván...")
             print(Fore.RED + f"🔪 Sát thủ kỳ {current_issue}: {killed_room_name}\n")
             skip_rounds -= 1
-
+            
             countdown = 1
             while True:
                 time.sleep(1)
@@ -397,8 +390,8 @@ if __name__ == "__main__":
         print(Fore.BLUE + "╔═══════════════════════════╗" + Fore.WHITE)
         print(Fore.BLUE + "║" + Fore.YELLOW + " ĐẶT CƯỢC CHO KỲ TIẾP THEO " + Fore.WHITE)
         print(Fore.BLUE + "╚═══════════════════════════╝" + Fore.WHITE)
-
-
+        
+        
         for rid in list(locked_rooms.keys()):
             if locked_rooms[rid] > 0:
                 locked_rooms[rid] -= 1
@@ -409,23 +402,22 @@ if __name__ == "__main__":
             target_rank = pick_pattern[pick_index]
             pick_index = (pick_index + 1) % len(pick_pattern)
 
-            # ✅ Bỏ qua phòng vừa bị sát thủ giết kỳ trước
             available_rooms = [(rid, rate) for rid, rate in sorted_rooms
                                if locked_rooms.get(str(rid), 0) == 0 and str(rid) != str(killed_room_id)]
-
+            
             if not available_rooms:
                 print(Fore.RED + "⚠️ Tất cả phòng đều bị khóa hoặc vừa có sát thủ, bỏ qua kỳ này.")
                 time.sleep(2)
                 continue
-
+                
             if len(available_rooms) >= target_rank:
                 best_room_id, best_rate = available_rooms[target_rank - 1]
             else:
                 best_room_id, best_rate = available_rooms[0]
-
+            
             best_room_name = room_names_map.get(str(best_room_id), f"Phòng #{best_room_id}")
             print(Fore.CYAN + f"🔄 chọn phòng: chọn phòng {target_rank} ({best_room_name})")
-
+            
             room_picked_count[best_room_id] = room_picked_count.get(best_room_id, 0) + 1
             if room_picked_count[best_room_id] >= 2:
                 locked_rooms[best_room_id] = 1
@@ -441,9 +433,9 @@ if __name__ == "__main__":
                 print(Fore.YELLOW + f"   {i+1}. {room_name}: {rate:.1f}%")
 
             print(Fore.RED + "╔══════════════════╗" + Fore.WHITE)
-            print(Fore.RED + "║" + Fore.YELLOW + " THỐNG KẾ KẾT QUẢ " + Fore.WHITE)
+            print(Fore.RED + "║" + Fore.YELLOW + " THỐNG KÊ KẾT QUẢ " + Fore.WHITE)
             print(Fore.RED + "╚══════════════════╝" + Fore.WHITE)
-
+            
             print(Fore.YELLOW + f"📊 Tỉ lệ thắng/thua: {total_wins}/{total_losses}")
             print(Fore.YELLOW + f"   Tổng trận: {total_wins + total_losses}")
             print(Fore.YELLOW + f"   Chuỗi thắng: {win_streak}")
