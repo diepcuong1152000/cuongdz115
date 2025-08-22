@@ -4,9 +4,8 @@ import os
 import uuid
 import random
 import hashlib
-from datetime import datetime, timezone
-import hashlib
-from datetime import datetime, timedelta
+import platform
+from datetime import datetime, timezone, timedelta
 from urllib.parse import urlparse, parse_qs
 from colorama import Fore, init
 
@@ -26,25 +25,27 @@ room_names_map = {
 SECRET = "MY_SECRET_SALT"
 GLOBAL_KEY_MODE = None
 
-
 def get_device_id():
-    file_path = ".sconfig"
-    if os.path.exists(file_path):
-        with open(file_path, "r") as f:
-            device_id = f.read().strip()
-            if device_id:
-                print(f"📌 Device ID hiện tại: {Fore.CYAN}{device_id}")
-                return device_id
-    raw_suffix = uuid.uuid4().hex.upper()[:10]
-    device_id = "DEVICE-" + raw_suffix
-    with open(file_path, "w") as f:
-        f.write(device_id)
-    print(f"📌 Device ID mới tạo: {Fore.CYAN}{device_id}")
+    try:
+      
+        android_id = os.popen("settings get secure android_id").read().strip()
+        if android_id and android_id != "null":
+            raw = "android-" + android_id
+        else:
+            # Nếu không có (máy tính) -> lấy MAC + tên máy
+            mac = uuid.getnode()
+            raw = f"{mac}-{platform.node()}"
+    except:
+        # fallback: random cố định theo node
+        raw = str(uuid.getnode())
+
+    
+    device_id = "DEVICE-" + hashlib.md5(raw.encode()).hexdigest()[:10].upper()
+    print(f"📌 Device ID: {device_id}")
     return device_id
 
 
 def make_free_key(user_id):
-    # Dùng ngày UTC (giống web JS toISOString().slice(0,10))
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     raw = today + SECRET + user_id
     return hashlib.md5(raw.encode()).hexdigest()[:10].upper()
@@ -74,6 +75,7 @@ def load_vip_key(device_id):
     except:
         pass
     return None, None
+
 
 
 def kiem_tra_quyen_truy_cap(device_id):
@@ -142,7 +144,6 @@ def kiem_tra_quyen_truy_cap(device_id):
     else:
         print(Fore.RED + "❌ Lựa chọn không hợp lệ!")
         exit()
-
 
 
 def fetch_data(url, headers):
@@ -318,7 +319,7 @@ if __name__ == "__main__":
 
     room_picked_count = {}
     locked_rooms = {}
-    pick_pattern = [1, 1, 2, 2, 1]
+    pick_pattern = [1, 2, 1, 3, 1]
 
     pick_index = 0
     skip_rounds = 0
@@ -342,12 +343,12 @@ if __name__ == "__main__":
         if pending_issue and str(pending_issue) == str(current_issue):
             time.sleep(3)
             new_balance = show_wallet(headers, asset_mode)
-            profit = new_balance - current_balance
-            total_profit = new_balance - initial_balance
 
             if killed_room_id != pending_room: 
                 total_wins += 1
                 win_streak += 1
+                profit = current_bet_amount   # thắng thì lời = số tiền cược
+                total_profit += profit
                 print(Fore.GREEN + f"🎉 Kỳ {current_issue}: THẮNG (+{profit:.2f} {asset_mode})")
                 current_bet_amount = bet_amount
 
@@ -357,15 +358,18 @@ if __name__ == "__main__":
             else: 
                 total_losses += 1
                 win_streak = 0
+                profit = -current_bet_amount  # thua thì lỗ = số tiền cược
+                total_profit += profit
                 print(Fore.RED + f"💀 Kỳ {current_issue}: THUA ({profit:.2f} {asset_mode})")
                 current_bet_amount += amount_to_increase_on_loss
 
-            if win_stop > 0 and total_wins >= win_stop:
-                print(Fore.CYAN + f"🏆 Đã thắng {total_wins} ván (>= {win_stop}), tự động tắt.")
+            # ✅ Check thắng/thua theo số tiền, không phải số ván
+            if win_stop > 0 and total_profit >= win_stop:
+                print(Fore.CYAN + f"🏆 Đã lời {total_profit:.2f} {asset_mode} (>= {win_stop}), tự động dừng!")
                 exit()
 
-            if loss_stop > 0 and total_losses >= loss_stop:
-                print(Fore.RED + f"💀 Đã thua {total_losses} ván (>= {loss_stop}), tự động thoát.")
+            if loss_stop > 0 and total_profit <= -loss_stop:
+                print(Fore.RED + f"💀 Đã lỗ {abs(total_profit):.2f} {asset_mode} (>= {loss_stop}), tự động thoát.")
                 exit()
 
             print(f"  AI chọn: {room_names_map.get(pending_room, f'Phòng #{pending_room}')}")
@@ -395,6 +399,7 @@ if __name__ == "__main__":
         print(Fore.BLUE + "╔═══════════════════════════╗" + Fore.WHITE)
         print(Fore.BLUE + "║" + Fore.YELLOW + " ĐẶT CƯỢC CHO KỲ TIẾP THEO " + Fore.WHITE)
         print(Fore.BLUE + "╚═══════════════════════════╝" + Fore.WHITE)
+
 
         for rid in list(locked_rooms.keys()):
             if locked_rooms[rid] > 0:
