@@ -4,6 +4,7 @@ import os
 import uuid
 import random
 import hashlib
+import subprocess
 import platform
 from datetime import datetime, timezone, timedelta
 from urllib.parse import urlparse, parse_qs
@@ -26,20 +27,42 @@ SECRET = "MY_SECRET_SALT"
 GLOBAL_KEY_MODE = None
 
 
-def get_device_id():
+def get_device_id(mode="mac"):
     try:
         android_id = os.popen("settings get secure android_id").read().strip()
         model = os.popen("getprop ro.product.model").read().strip()
         brand = os.popen("getprop ro.product.brand").read().strip()
         serial = os.popen("getprop ro.serialno").read().strip()
 
-        raw = f"{android_id}-{brand}-{model}-{serial}"
+        if android_id and model and brand:
+            raw = f"{android_id}-{brand}-{model}-{serial}"
+        else:
+            raise Exception("Not Android")
     except:
-        raw = str(uuid.getnode())
+        # PC thì chọn mode
+        if mode == "mac":
+            raw = str(uuid.getnode())
+        elif mode == "cpu":
+            raw = f"{platform.processor()}-{platform.machine()}"
+        elif mode == "disk":
+            try:
+                if platform.system() == "Windows":
+                    disk_serial = subprocess.check_output(
+                        "wmic diskdrive get SerialNumber", shell=True
+                    ).decode(errors="ignore").split("\n")[1].strip()
+                else:
+                    disk_serial = subprocess.check_output(
+                        "udevadm info --query=property --name=/dev/sda | grep ID_SERIAL",
+                        shell=True
+                    ).decode(errors="ignore").strip()
+            except:
+                disk_serial = "NOSERIAL"
+            raw = disk_serial
+        else:
+            raw = f"{platform.node()}-{platform.system()}-{platform.release()}"
 
-    # Hash + lấy 15 ký tự đầu
     device_id = "DEVICE-" + hashlib.md5(raw.encode()).hexdigest()[:15].upper()
-    print(f"📌 Device ID: {device_id}")
+    print(Fore.BLUE + "📌 Device ID:" +Fore.YELLOW + f" {device_id}")
     return device_id
 
 
@@ -281,13 +304,13 @@ if __name__ == "__main__":
         "Content-Type": "application/json",
     }
 
-    print(Fore.CYAN + "═" * 40)
+    print(Fore.CYAN + "═" * 48)
     print(Fore.YELLOW + "   CHỌN CHẾ ĐỘ")
-    print(Fore.CYAN + "═" * 40)
+    print(Fore.CYAN + "═" * 48)
     print(Fore.GREEN + "1. BUILD")
     print(Fore.MAGENTA + "2. USDT")
     print(Fore.LIGHTYELLOW_EX + "3. WORLD")
-    choice = input("Chọn (1-3): ")
+    choice = input(Fore.GREEN + "Chọn (1-3): ")
     asset_mode = {"1": "BUILD", "2": "USDT", "3": "WORLD"}.get(choice, "BUILD")
 
     try:
@@ -298,7 +321,7 @@ if __name__ == "__main__":
         win_stop = float(input(Fore.YELLOW + "Thắng bao nhiêu BUILD thì dừng: ").strip())
         loss_stop = float(input(Fore.YELLOW + "Thua bao nhiêu BUILD thì dừng: ").strip())
     except ValueError:
-        bet_amount = 30.0
+        bet_amount = 10.0
         amount_to_increase_on_loss = 10.0
         win_limit = 0
         rest_games = 0
@@ -314,7 +337,7 @@ if __name__ == "__main__":
 
     room_picked_count = {}
     locked_rooms = {}
-    pick_pattern = [1, 2, 1, 3, 1]
+    pick_pattern = [1, 1, 2, 1, 2]
 
     pick_index = 0
     skip_rounds = 0
@@ -388,7 +411,7 @@ if __name__ == "__main__":
             continue
 
         print(Fore.BLUE + "╔═══════════════════════════╗" + Fore.WHITE)
-        print(Fore.BLUE + "║" + Fore.YELLOW + " ĐẶT CƯỢC CHO KỲ TIẾP THEO " + Fore.WHITE)
+        print(Fore.BLUE + "║" + Fore.YELLOW + " ĐẶT CƯỢC CHO KỲ TIẾP THEO " + Fore.BLUE + "║" + Fore.WHITE)
         print(Fore.BLUE + "╚═══════════════════════════╝" + Fore.WHITE)
         
         
@@ -433,7 +456,7 @@ if __name__ == "__main__":
                 print(Fore.YELLOW + f"   {i+1}. {room_name}: {rate:.1f}%")
 
             print(Fore.RED + "╔══════════════════╗" + Fore.WHITE)
-            print(Fore.RED + "║" + Fore.YELLOW + " THỐNG KÊ KẾT QUẢ " + Fore.WHITE)
+            print(Fore.RED + "║" + Fore.YELLOW + " THỐNG KÊ KẾT QUẢ " + Fore.RED +"║" + Fore.WHITE)
             print(Fore.RED + "╚══════════════════╝" + Fore.WHITE)
             
             print(Fore.YELLOW + f"📊 Tỉ lệ thắng/thua: {total_wins}/{total_losses}")
