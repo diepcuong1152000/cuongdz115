@@ -117,8 +117,9 @@ def kiem_tra_quyen_truy_cap(device_id):
 
         free_links = [
             "https://link4m.com/Bhdv5",
+            "https://link4m.com/LvWUEq5F",
             "https://link4m.com/Bhdv5",
-            "https://link4m.com/Bhdv5",
+            "https://link4m.com/LvWUEq5F",
         ]
         random_link = random.choice(free_links)
         print(Fore.GREEN + "   " + random_link)
