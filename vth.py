@@ -106,6 +106,7 @@ def kiem_tra_quyen_truy_cap(device_id):
     print(Fore.CYAN + "=" * 48)
     print(Fore.GREEN + "1. Key Free (vượt link)")
     print(Fore.MAGENTA + "2. Key VIP (ib Cường để mua)")
+    print(Fore.BLUE + "3. keyvip 1k/2 ngày")
     print(Fore.CYAN + "=" * 48)
 
     choice = input(Fore.YELLOW + "Chọn (1-2): " + Fore.WHITE).strip()
