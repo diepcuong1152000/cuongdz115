@@ -20,7 +20,7 @@ room_names_map = {
     "6": "Vua Home Run",
 }
 
-SECRET = "MY_SECRET        _SALT"
+SECRET = "MY_SECRET_SALT"
 GLOBAL_KEY_MODE = None
 
 def get_device_id():
