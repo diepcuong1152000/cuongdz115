@@ -273,7 +273,7 @@ if __name__ == "__main__":
     print(Fore.CYAN + "\n================= LIÊN HỆ ADMIN ================")
     print(Fore.YELLOW + "👨‍💻 Admin: " + Fore.GREEN + "Cường")
     print(Fore.YELLOW + "💬 Zalo Group: " + Fore.CYAN + "https://zalo.me/g/cdomty095")
-    print(Fore.CYAN + "key vip 1k/2 ngày")"================================================\n")
+    print(Fore.CYAN +" ================================================\n")
 
     print(Fore.YELLOW + "\n================ HƯỚNG DẪN LẤY LINK ============\n")
     print(Fore.CYAN + "0. Mở Chrome")
