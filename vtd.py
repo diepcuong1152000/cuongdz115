@@ -461,7 +461,7 @@ if __name__ == "__main__":
     pending_issue, pending_target = None, None
     room_picked_count = {}
     locked_rooms = {}
-    pick_pattern = [2, 1, 4, 3, 2, 5, 1, 3]
+    pick_pattern = [1, 2, 2, 1, 2, 3, 1, 2]
     pick_index = 0
     skip_rounds = 0
 
