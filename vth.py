@@ -168,7 +168,7 @@ def get_device_id(mode="mac"):
         else:
             raw = f"{platform.node()}-{platform.system()}-{platform.release()}"
 
-    device_id = "DEVICE-" + hashlib.md5(raw.encode()).hexdigest()[:15].upper()
+    device_id = "DEVICE-" + hashlib.md5(raw.encode()).hexdigest()[:20].upper()
     print(Fore.BLUE + "📌 Device ID:" +Fore.YELLOW + f" {device_id}")
     return device_id
 
