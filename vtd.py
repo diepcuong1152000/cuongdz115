@@ -619,7 +619,7 @@ if __name__ == "__main__":
                 total_losses += 1
                 win_streak = 0
                 print(Fore.RED + f"💀 Kỳ {last_processed_issue}: THUA ({profit:.2f} BUILD)")
-                current_bet_amount = max(bet_amount, current_bet_amount + amount_to_increase_on_loss)
+                current_bet_amount = max(bet_amount, current_bet_amount * amount_to_increase_on_loss)
 
             if win_stop > 0 and total_profit >= win_stop:
                 print(Fore.CYAN + f"🏆 Đã lời {total_profit:.2f} BUILD (>= {win_stop}), tự động thoát.")
@@ -655,9 +655,7 @@ if __name__ == "__main__":
             time.sleep(2)
             continue
 
-        target_rank = pick_pattern[pick_index]
-        pick_index = (pick_index + 1) % len(pick_pattern)
-
+        # random phòng thay vì pick_pattern
         available = [(rid, val) for rid, val in ranking if locked_rooms.get(str(rid), 0) == 0]
         if not available:
             print(Fore.RED + "⚠️ Tất cả lựa chọn đang bị khóa, bỏ qua kỳ này.")
@@ -665,17 +663,9 @@ if __name__ == "__main__":
             time.sleep(2)
             continue
 
-        if len(available) >= target_rank:
-            best_id, _best_val = available[target_rank - 1]
-        else:
-            best_id, _best_val = available[0]
-
+        # Chọn random phòng cược
+        best_id, _best_val = random.choice(available)
         best_name = room_names_map.get(str(best_id), f"Quán quân #{best_id}")
-        room_picked_count[best_id] = room_picked_count.get(best_id, 0) + 1
-        if room_picked_count[best_id] >= 2:
-            locked_rooms[str(best_id)] = 1
-            room_picked_count[best_id] = 0
-
         print_game_data(issues_10, stats_100, best_name, last_champion_name)
 
         print(Fore.RED + "╔══════════════════╗" + Fore.WHITE)
@@ -686,8 +676,9 @@ if __name__ == "__main__":
         print(Fore.YELLOW + f"   Chuỗi thắng: {win_streak}")
         print(Fore.YELLOW + f"   Lời/Lỗ: {total_profit:.2f} BUILD\n")
 
-        print(Fore.YELLOW + "⏳ Chờ để lấy kỳ mới...")
-        time.sleep(10)
+        # Random chờ 10–15 giây
+        delay = random.randint(10, 15)
+        time.sleep(delay)
 
         try:
             next_issue = str(int(current_issue) + 1)
@@ -701,11 +692,11 @@ if __name__ == "__main__":
             success = place_bet(headers, bet_group, "BUILD", int(best_id), next_issue, current_bet_amount)
             if success:
                 pending_issue, pending_target = next_issue, str(best_id)
+                print(Fore.GREEN + f"✅ Đặt cược thành công sau {delay} giây\n")
             else:
                 print(Fore.RED + "⚠️ Không có quán quân để cược, bỏ qua kỳ này.")
         except Exception as e:
             print(Fore.RED + f"❌ Lỗi xác định kỳ tiếp theo: {e}")
-            success = False
 
         last_processed_issue = current_issue
         print(Fore.RED + f"👑 Quán quân kỳ {current_issue}: {last_champion_name}\n")
