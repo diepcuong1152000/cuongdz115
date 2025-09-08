@@ -494,7 +494,7 @@ if __name__ == "__main__":
                 total_losses += 1
                 win_streak = 0
                 print(Fore.RED + f"💀 Kỳ {current_issue}: THUA ({profit:.2f} {asset_mode})")
-                current_bet_amount += amount_to_increase_on_loss
+                current_bet_amount *= amount_to_increase_on_loss
             
             if win_stop > 0 and total_profit >= win_stop:
                 print(Fore.CYAN + f"🏆 Đã lời {total_profit:.2f} {asset_mode} (>= {win_stop}), tự động dừng!")
