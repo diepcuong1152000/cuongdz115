@@ -614,7 +614,7 @@ if __name__ == "__main__":
                 current_bet_amount = bet_amount
                 if win_limit > 0 and (total_wins % win_limit == 0):
                     print(Fore.CYAN + f"🛑 Đã thắng {total_wins} ván, tạm nghỉ {rest_games} ván...")
-                    skip_rounds = rest_games
+                    skip_rounds = rest_games + 1
             else:
                 total_losses += 1
                 win_streak = 0
