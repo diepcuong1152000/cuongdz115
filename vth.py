@@ -516,11 +516,7 @@ if __name__ == "__main__":
                 time.sleep(2)
                 continue
 
-            if win_streak == 0 and total_losses > 0 and total_losses % 3 == 0:
-                print(Fore.MAGENTA + "⏸️ Thua liên tiếp, nghỉ 1 ván...")
-                skip_rounds = 1
-                loss_streak = 0
-                continue
+            
 
         for rid in list(locked_rooms.keys()):
             if locked_rooms[rid] > 0:
