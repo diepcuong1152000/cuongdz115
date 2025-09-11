@@ -1,19 +1,3 @@
-# ====== AUTO INSTALL PACKAGES ======
-import sys, subprocess, pkg_resources
-
-required = {"requests", "colorama"}  # Các thư viện cần
-installed = {pkg.key for pkg in pkg_resources.working_set}
-missing = required - installed
-
-if missing:
-    print(f"⚡ Đang cài thư viện: {', '.join(missing)} ...")
-    python = sys.executable
-    try:
-        subprocess.check_call([python, "-m", "pip", "install", *missing])
-    except Exception as e:
-        print(f"❌ Lỗi khi cài thư viện: {e}")
-        sys.exit(1)
-# ===================================
 import requests
 import time
 import os
